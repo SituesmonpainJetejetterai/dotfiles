@@ -36,7 +36,7 @@ alias keybr="keybr.sh" # Call "keybr.sh", my personal take on keybr.com
 alias mtd="mtd.sh" # Call "mtd.sh"
 alias mns="mns.sh" # Call "mns.sh"
 alias dt="dt.sh" # Call "dt.sh"
-alias e="e.sh" # Call "e.sh"
+alias tup="tup.sh" # Call "tup.sh"
 
 # Git
 
