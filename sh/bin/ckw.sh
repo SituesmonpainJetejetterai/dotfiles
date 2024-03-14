@@ -49,7 +49,7 @@ ckw() {
                 alias_search=1
                 ;;
             p)
-                printf "%s" "${PATH}" | sed "s/:/\n/g"
+                printf "%s\n" "${PATH}" | sed "s/:/\n/g"
                 ;;
             h)
                 help
