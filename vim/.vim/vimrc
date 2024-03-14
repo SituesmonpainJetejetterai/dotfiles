@@ -1,0 +1,463 @@
+" Enter the current millenium
+set nocompatible
+
+" Automatically source vimrc
+autocmd BufWritePost .vimrc source $MYVIMRC
+
+" Toggles
+
+" Function to toggle interactive shell
+let g:shelltogglevariable = 0
+function! Shelltoggle()
+    if g:shelltogglevariable
+        setlocal shellcmdflag=-c
+        let g:shelltogglevariable = 0
+        echom "non-interactive"
+    else
+        setlocal shellcmdflag=-ic
+        let g:shelltogglevariable = 1
+        echom "interactive"
+    endif
+endfunction
+
+cnoremap ni call Shelltoggle()<CR>
+
+" Toggle hlsearch
+" Link: https://stackoverflow.com/a/54938524
+cnoremap nh set invhlsearch<CR>
+
+" Toggle line numbers and relative line numbers
+" Link: https://stackoverflow.com/a/14975679
+cnoremap nl set invnu invrnu<CR>
+
+
+" ---
+
+
+" BASIC SETUP:
+
+" Set the cursor
+let &t_SI = "\<Esc>]12;LightGreen\x7"
+let &t_SR = "\<Esc>]12;magenta\x7"
+let &t_EI = "\<Esc>]12;grey\x7"
+
+" Set the cursorline and cursorcolumn
+set cursorline
+set cursorcolumn
+
+" No error bells
+" Link: https://web.cs.dal.ca/~johnston/unix/myfiles.html#.vimrc
+set noerrorbells
+
+" Show the current mode
+" Link: https://web.cs.dal.ca/~johnston/unix/myfiles.html#.vimrc
+set showmode
+
+" Display incomplete commands
+set showcmd
+
+" Set characters to signify tabs, whitespaces etc
+set list
+set lcs=tab:>~,trail:-,nbsp:%
+
+" Set relative and static numbering for lines
+set relativenumber
+set number
+set numberwidth=5
+
+" Open new split panes to right and bottom, which feels more natural
+set splitbelow
+set splitright
+
+" Center the cursor while scrolling
+set scrolloff=999
+" https://vim.fandom.com/wiki/Keep_your_cursor_centered_vertically_on_the_screen
+" set scrolloff=8
+
+" Don't abandon buffers in the background even if they are unsaved
+set hidden
+
+" Setting up colours (unwanted change, but whatever)
+set t_Co=256
+
+" Enable syntax, plugins and indentation
+syntax enable
+filetype plugin indent on
+set autoindent
+
+" Setting up the tabs from the Vim wiki on reddit
+set tabstop=8
+set softtabstop=4
+set shiftwidth=4
+set expandtab
+
+" Highlight matching [{()}]
+set showmatch
+
+" Improve text search inside a file
+set incsearch
+
+" Don't keep the higlight on after searching by default
+set nohlsearch
+
+" Code folding
+set foldenable
+set foldlevelstart=10
+set foldmethod=syntax
+
+" Good backspace behaviour
+set backspace=indent,eol,start
+
+" Have lines wrap instead of continue off-screen
+set linebreak
+
+" Wrapping with breakindent
+" Link: https://bluz71.github.io/2021/09/10/vim-tips-revisited.html
+set breakindent
+set breakindentopt=shift:2
+set showbreak=///
+
+" abBREVIATIONS
+" typos
+" Link: https://web.cs.dal.ca/~johnston/unix/myfiles.html#.vimrc
+
+augroup ABB
+    autocmd!
+    autocmd FileType markdown iab anf and
+    autocmd FileType markdown iab adn and
+    autocmd FileType markdown iab ans and
+    autocmd FileType markdown iab teh the
+    autocmd FileType markdown iab thre there
+    autocmd FileType markdown iab jst just
+augroup END
+
+" Persistent undo
+" Link: https://bluz71.github.io/2021/09/10/vim-tips-revisited.html
+let s:undodir = "/tmp/.undodir_" . $USER
+if !isdirectory(s:undodir)
+    call mkdir(s:undodir, "", 0700)
+endif
+let &undodir=s:undodir
+set undofile
+
+" Shortcut to escape from insert mode
+inoremap jj <ESC>
+
+
+
+" ---------
+
+
+
+" FINDING FILES:
+
+" Search down into subfolders
+" Provides tab-completion for all file-related tasks
+set path+=**
+
+" Display all matching files when we tab complete
+" And ignore certain files while searching
+set wildmenu
+set wildignore+=.git/*,*/node_modules/*,*/target/*,*.class,*.png,*.gif,*.pdf,*.exe,*.so,*.jar,*.war,*.ear,*.dll,*.swp,*.zip,*.pyc
+
+" NOW WE CAN:
+" - Hit tab to :find by partial match
+" - Use * to make it fuzzy
+
+" THINGS TO CONSIDER:
+" - :b lets you autocomplete any open buffer
+
+
+
+" ---------
+
+
+
+" FILE BROWSING:
+
+" Tweaks for browsing
+let g:netrw_banner=0        " disable annoying banner
+let g:netrw_browse_split=4  " open in prior window
+let g:netrw_altv=1          " open splits to the right
+let g:netrw_liststyle=3     " tree view
+let g:netrw_preview = 1     " vertical preview splits
+let g:netrw_winsize = 20    " width of explorer
+let g:netrw_list_hide=netrw_gitignore#Hide()
+" let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
+
+" NOW WE CAN:
+" - :edit a folder to open a file browser
+" - <CR>/v/t to open in an h-split/v-split/tab
+" - check |netrw-browse-maps| for more mappings
+
+
+
+"---------
+
+
+
+" MISCELLANEOUS:
+
+" Return to last edit position when opening files
+" Link: https://github.com/MarcoLucidi01/dotfiles/blob/master/.vim/vimrc
+augroup RETURN_TO_POSITION
+    autocmd!
+    autocmd BufReadPost *
+        \ if line("'\"") > 0 && line("'\"") <= line("$") |
+        \   exe "normal! g`\"" |
+        \ endif
+augroup END
+
+" Automatically put a shebang at the top of a file
+" Link: https://stackoverflow.com/a/50336469
+augroup SHEBANG
+    autocmd!
+    autocmd BufNewFile *.sh,*.py let ftype = &ft | execute 'silent! 1s:.*:#!/bin/' . ftype
+augroup END
+
+" Comments, aggregated
+" Link: https://vim.fandom.com/wiki/Comment_%26_Uncomment_multiple_lines_in_Vim
+" Easy, just execute the relevant regex according to filetype
+" And try to uncomment first, if not then comment - this is important, because uncomment will not work for already uncommented lines.
+
+function! Comment()
+    let ft = &filetype
+    if ft == 'php' || ft == 'ruby' || ft == 'sh' || ft == 'make' || ft == 'python' || ft == 'perl' || ft == 'yaml'
+        silent s/^/\# /
+    elseif ft == 'javascript' || ft == 'c' || ft == 'cpp' || ft == 'java' || ft == 'objc' || ft == 'scala' || ft == 'go'
+        silent s:^:\/\/:g
+    elseif ft == 'tex'
+        silent s:^:%:g
+    elseif ft == 'vim'
+        silent s:^:\" :g
+    endif
+endfunction
+
+function! Uncomment()
+    let ft = &filetype
+    if ft == 'php' || ft == 'ruby' || ft == 'sh' || ft == 'make' || ft == 'python' || ft == 'perl' || ft == 'yaml'
+        silent s/^\# //
+    elseif ft == 'javascript' || ft == 'c' || ft == 'cpp' || ft == 'java' || ft == 'objc' || ft == 'scala' || ft == 'go'
+        silent s:^\/\/::g
+    elseif ft == 'tex'
+        silent s:^%::g
+    elseif ft == 'vim'
+        silent s:^\" ::g
+    endif
+endfunction
+
+function! Comment_Toggle()
+    try
+        call Uncomment()
+    catch
+        call Comment()
+    endtry
+endfunction
+
+nnoremap <C-\> :call Comment_Toggle()<CR>
+vnoremap <C-\> :call Comment_Toggle()<CR>
+
+
+
+" ---------
+
+
+
+" COLOURS
+
+" Gives Vim access to a broader range of colours
+set termguicolors
+
+" Set a default colour scheme
+colorscheme desert
+
+" Set a font when using the GUI
+set guifont=Cascadia_Mono_SemiBold:h14:W600:cANSI
+
+
+
+" ---------
+
+
+
+" Statusline
+
+" Function to get the git branch in the statusline
+function! Gitbranch() abort
+    try
+        silent!
+        " return trim(system("git -C " . expand("%:h") . " branch --show-current 2>/dev/null"))
+        return trim(system("cd " . expand("%:h") . "&& git rev-parse --abbrev-ref HEAD 2>/dev/null && cd - 1>/dev/null"))
+    catch
+        return " Unknown"
+    endtry
+endfunction
+
+" Autogroup to run the command only when entering the window of the buffer
+augroup Gitget
+    autocmd!
+    autocmd BufWinEnter * let b:git_branch = Gitbranch()
+augroup END
+
+" Link: https://stackoverflow.com/a/5380230
+" Link: https://www.reddit.com/r/vim/comments/pq3xwa/how_to_get_the_git_branch_in_the_statusline/
+
+set statusline=                                  " Start
+set statusline+=\{%n}%(\ (%{b:git_branch})%)     " Show the buffer and the git branch
+set statusline+=\ %t%y                           " Show the tail(filename), filetype
+set statusline+=\ %c%V:%L                        " Show current line and total lines
+set statusline+=\ %p\%%                          " Show percentage through file in lines as in CTRL-G
+set statusline+=\ %m%r                           " Show if file is modified and if in readonly mode
+
+" Enable the statusline
+set laststatus=2
+
+
+
+" ---------
+
+
+
+" KEY MAPPINGS
+
+" Map <SPACE> as the <Leader>
+let g:mapleader=" "
+
+" Map > to resize the window by 2 units to the right.
+" Map < to resize the window by 2 units to the left.
+" Only for vertical windows, as I don't use (or like) the horizontal split.
+" Link: https://vim.fandom.com/wiki/Quick_window_resizing
+nnoremap > <C-W>><C-W>>
+nnoremap < <C-W><<C-W><
+
+" Open a terminal in the bottom half of the screen
+nnoremap <silent> <Leader>t :below terminal++rows=10<CR>
+
+" Move lines up
+nnoremap <C-k> :m-2<CR>
+inoremap <C-k> :m-2<CR>
+vnoremap <C-k> :m '<-2<CR>gv
+
+" Delete in insert mode
+inoremap <C-b> <del>
+
+" Ability to indent repeatedly without changing modes
+" This will re-select the last visual selection after you use > while in Visual mode
+xnoremap > >gv
+xnoremap < <gv
+
+" Map `j` to `gj` and `k` to `gk` to move easily with wrapped lines
+nnoremap j gj
+nnoremap k gk
+
+" Map 'H' and 'L' to move to the second-to-last letter in line
+nnoremap H ^l
+nnoremap L $h
+vnoremap H ^l
+vnoremap L $h
+
+" Easier split navigation bindings
+" Link: https://thoughtbot.com/blog/vim-splits-move-faster-and-more-naturally#easier-split-navigations
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+nnoremap <C-h> <C-w>h
+" Link: https://stackoverflow.com/a/4368859
+nnoremap <Leader>= :winc =<CR>
+
+" Remap to copy the entire line from the point of the cursor
+nnoremap Y y$
+
+" Remaps to copy and paste, to and from the system buffer
+" Will only work if vim is compiled with the clipboard flag
+" noremap <C-y> "*y
+" noremap <C-p> "*p
+" noremap <C-Y> "+y
+" noremap <C-P> "+p
+
+" Remaps to center the cursor
+" Link: https://bluz71.github.io/2021/09/10/vim-tips-revisited.html
+nnoremap {  {zz
+nnoremap }  }zz
+nnoremap n  nzz
+nnoremap N  Nzz
+nnoremap ]c ]czz
+nnoremap [c [czz
+nnoremap [j <C-o>zz
+nnoremap ]j <C-i>zz
+nnoremap ]s ]szz
+nnoremap [s [szz
+
+" Recgnise terraform files as yaml
+augroup recogniseterraform
+    autocmd!
+    autocmd BufRead,BufNewFile *.tf set filetype=yaml
+augroup END
+
+" Recognise vim files
+augroup recognisevim
+    autocmd!
+    autocmd BufRead,BufNewFile *.vim set filetype=vim
+    autocmd BufRead,BufNewFile vimrc set filetype=vim
+augroup END
+
+" Remap to save and source a file if updated
+augroup Vimsave
+    autocmd!
+    autocmd FileType vim nnoremap <Leader>w :update<CR>:so %<CR>
+augroup END
+
+" Remap to write to a file only if contents are changed
+nnoremap <silent> <Leader>w :update<CR>
+
+" Remap to paste what you yanked, not what you deleted
+nnoremap ,p "0p
+nnoremap ,P "0P
+
+" Remap to undo break points (really important)
+" Instead of undoing the entire change (which can really suck), undo till a last recongnised mark, like a '.', ',', '!' and '?'.
+inoremap , ,<c-g>u
+inoremap . .<c-g>u
+inoremap ! !<c-g>u
+inoremap ? ?<c-g>u
+
+" List buffers and prepare to switch
+nnoremap gb :ls<CR>:b
+
+" Open up netrw in a vertical split
+nnoremap <Leader>v :Vexplore<CR>
+
+" Reload buffers that have changed
+nnoremap <Leader>r :checktime<CR>
+
+" Surround with brackets or punctuation marks
+vnoremap ( c()<ESC>hp
+vnoremap [ c[]<ESC>hp
+vnoremap { c{}<ESC>hp
+vnoremap ' c''<ESC>hp
+vnoremap " c""<ESC>hp
+vnoremap ` c``<ESC>hp
+
+" Autocomplete brackets and punctuation marks logic
+inoremap <buffer>( ()<ESC>i
+inoremap <buffer>{ {}<ESC>i
+inoremap <buffer>[ []<ESC>i
+inoremap <buffer>` ``<ESC>i
+inoremap <buffer>* **<ESC>i
+inoremap <buffer>\" \"\"<ESC>hi
+
+augroup brackets
+    autocmd!
+    autocmd FileType gitcommit,markdown,python,sh,yaml,json inoremap <buffer> " ""<ESC>i
+    autocmd FileType vim,python,sh inoremap <buffer> ' ''<ESC>i
+augroup END
+
+" Remove bracket pair by deleting first bracket
+" nnoremap <Leader>d %x``x
+nnoremap <Leader>d %x<C-o>x
+
+" Invoke the help command with an argument, but vertically
+command! -nargs=? -complete=help Vh vert help <args>
+
+" Accept typo whilst writing to file
+command W w
