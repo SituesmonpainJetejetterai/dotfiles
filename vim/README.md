@@ -269,6 +269,9 @@ There are some others, like,
 
 `:s/\s*\w\+\s*$//`
 
+## To reduce all unnecessary spaces before a "="
+
+`:%s/\(\s\{1,\}\)=/ =/g`
 
 ---
 
